@@ -19,6 +19,7 @@ class UpdateServiceSchema extends Schema
                 'name',
                 'slug',
                 'type',
+                'organisation_id',
                 'status',
                 'intro',
                 'description',
@@ -28,10 +29,7 @@ class UpdateServiceSchema extends Schema
                 'fees_url',
                 'testimonial',
                 'video_embed',
-                'url',
                 'contact_name',
-                'contact_phone',
-                'contact_email',
                 'show_referral_disclaimer',
                 'referral_method',
                 'referral_button_text',
@@ -54,6 +52,8 @@ class UpdateServiceSchema extends Schema
                         Service::TYPE_CLUB,
                         Service::TYPE_GROUP
                     ),
+                Schema::string('organisation_id')
+                    ->format(static::FORMAT_UUID),
                 Schema::string('status')
                     ->enum(Service::STATUS_ACTIVE, Service::STATUS_INACTIVE),
                 Schema::integer('score')

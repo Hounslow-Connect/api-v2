@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Contracts\AppliesUpdateRequests;
 use App\Emails\Email;
 use App\Http\Requests\Service\UpdateRequest as UpdateServiceRequest;
+use App\Http\Resources\OrganisationResource;
 use App\Models\Mutators\ServiceMutators;
 use App\Models\Relationships\ServiceRelationships;
 use App\Models\Scopes\ServiceScopes;
@@ -111,14 +112,14 @@ class Service extends Model implements AppliesUpdateRequests, Notifiable, HasTax
 
         return [
             'id' => $this->id,
-            'name' => $this->onlyAlphaNumeric($this->name),
-            'intro' => $this->onlyAlphaNumeric($this->intro),
-            'description' => $this->onlyAlphaNumeric($this->description),
+            'name' => $this->makeSearchable($this->name),
+            'intro' => $this->makeSearchable($this->intro),
+            'description' => $this->makeSearchable($this->description),
             'wait_time' => $this->wait_time,
             'is_free' => $this->is_free,
             'status' => $this->status,
             'score' => $this->score,
-            'organisation_name' => $this->onlyAlphaNumeric($this->organisation->name),
+            'organisation_name' => $this->makeSearchable($this->organisation->name),
             'taxonomy_categories' => $this->taxonomies()->pluck('name')->toArray(),
             'collection_categories' => static::collections($this)->where('type', Collection::TYPE_CATEGORY)->pluck('name')->toArray(),
             'collection_personas' => static::collections($this)->where('type', Collection::TYPE_PERSONA)->pluck('name')->toArray(),
@@ -312,6 +313,9 @@ class Service extends Model implements AppliesUpdateRequests, Notifiable, HasTax
             }
         }
 
+        // Update the search index
+        $this->save();
+
         // Ensure conditional fields are reset if needed.
         $this->resetConditionalFields();
 
@@ -324,6 +328,10 @@ class Service extends Model implements AppliesUpdateRequests, Notifiable, HasTax
      */
     public function getData(array $data): array
     {
+        if (isset($data['organisation_id'])) {
+            $data['organisation'] = new OrganisationResource(Organisation::find($data['organisation_id']));
+        }
+
         return $data;
     }
 
